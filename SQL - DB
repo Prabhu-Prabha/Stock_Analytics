@@ -1,1 +1,46 @@
 
+import os
+import pandas as pd
+from sqlalchemy import create_engine
+import mysql.connector
+
+mydb = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="",
+    port="3306"
+)
+
+cursor = mydb.cursor()
+cursor.execute("CREATE DATABASE IF NOT EXISTS project_ii")
+cursor.close()
+mydb.close()
+
+print("Database project_ii created successfully")
+
+
+# MySQL connection
+engine = create_engine(
+    "mysql+mysqlconnector://root:@localhost:3306/project_ii"
+)
+
+CSV_FOLDER = "D:/Guvi/Projects/Stock-Analytics/analysis_outputs"
+
+for file in os.listdir(CSV_FOLDER):
+    if file.endswith(".csv"):
+        table_name = file.replace(".csv", "").lower()
+
+        file_path = os.path.join(CSV_FOLDER, file)
+        df = pd.read_csv(file_path)
+
+        # Upload to MySQL
+        df.to_sql(
+            name=table_name,
+            con=engine,
+            if_exists="replace",
+            index=False
+        )
+
+        print(f"Uploaded {file} → table `{table_name}`")
+
+print("All CSV files uploaded successfully")
